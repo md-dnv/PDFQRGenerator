@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PDF Download QR Code Generator </title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif;
+            background: #FAFAFA;
+            color: #1D1D1F;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: #FFFFFF;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid #E5E5E5;
+        }
+
+        h1 {
+            text-align: center;
+            color: #1D1D1F;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #E5E5E5;
+            border-radius: 12px;
+            font-size: 0.95em;
+            margin-bottom: 15px;
+            background: #F5F5F7;
+            color: #1D1D1F;
+        }
+
+        input[type="text"]:focus {
+            border-color: #0071E3;
+            background: #FFFFFF;
+            box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
+        }
+
+        button {
+            background: #0071E3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 0.95em;
+            cursor: pointer;
+            display: inline-block;
+            margin: 10px 5px;
+			width: 180px; 
+        }
+
+        button:hover {
+            background: #005BB5;
+        }
+
+        #qrcode {
+            display: none;
+            justify-content: center;
+            align-items: center;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            border: 1px solid #E5E5E5;
+            text-align: center;
+        }
+
+        #buttons-container {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PDF Download QR Code Generator</h1>
+        <input type="text" id="pdfUrl" placeholder="Enter your Google Drive link">
+        <div id="buttons-container">
+            <button onclick="generateQR()">Generate QR Code</button>
+            <button onclick="resetScreen()">Reset</button>
+        </div>
+        <div id="qrcode"></div>
+        <div id="download-button-container" style="display: none; text-align: center;">
+            <button onclick="downloadQR()">Download QR Code</button>
+        </div>
+    </div>
+
+    <script>
+        function generateQR() {
+            const inputUrl = document.getElementById('pdfUrl').value.trim();
+
+            // Validate and process the Google Drive link
+            const downloadableLink = convertToDownloadableLink(inputUrl);
+
+            if (!downloadableLink) {
+                alert('Please enter a valid Google Drive link');
+                return;
+            }
+
+            // Clear and hide the QR code container initially
+            const qrCodeContainer = document.getElementById('qrcode');
+            qrCodeContainer.innerHTML = '';
+            qrCodeContainer.style.display = 'none';
+
+            // Generate new QR code
+            new QRCode(qrCodeContainer, {
+                text: downloadableLink,
+                width: 200,
+                height: 200,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+
+            // Show the QR code and download button
+            qrCodeContainer.style.display = 'flex';
+            document.getElementById('download-button-container').style.display = 'block';
+        }
+
+        function resetScreen() {
+            // Clear the input field
+            document.getElementById('pdfUrl').value = '';
+
+            // Clear and hide the QR code container
+            const qrCodeContainer = document.getElementById('qrcode');
+            qrCodeContainer.innerHTML = '';
+            qrCodeContainer.style.display = 'none';
+
+            // Hide the download button
+            document.getElementById('download-button-container').style.display = 'none';
+        }
+
+        function downloadQR() {
+            const qrCodeContainer = document.getElementById('qrcode').getElementsByTagName('img')[0];
+
+            if (qrCodeContainer) {
+                const link = document.createElement('a');
+                link.href = qrCodeContainer.src;
+                link.download = 'qr-code.png';
+                link.click();
+            } else {
+                alert('No QR Code found to download!');
+            }
+        }
+
+        function convertToDownloadableLink(url) {
+            const regex = /drive\.google\.com\/(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/;
+            const match = url.match(regex);
+
+            if (match && match[1]) {
+                const fileId = match[1];
+                return `https://drive.google.com/uc?export=download&id=${fileId}`;
+            }
+            return null; // Return null if the link is invalid
+        }
+    </script>
+</body>
+</html>
